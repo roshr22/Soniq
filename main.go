@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"soniq/internal/server"
-	"soniq/internal/handlers"
+	"soniq/internal/server/handlers"
 )
 
 func main() {
