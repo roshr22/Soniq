@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"soniq/internal/server"
-	//"soniq/internal/handlers"
+	"soniq/internal/handlers"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	r.GET("/ws", server.HandleWebSocket)
 
 	// Audio upload endpoint
-	//r.POST("/upload", handlers.UploadAudio)
+	r.POST("/upload", handlers.UploadAudio)
 
 	// Start server
 	r.Run(":8080")
