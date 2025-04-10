@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"soniq/internal/server"
-	"soniq/internal/server/handlers"
 )
 
 func main() {
@@ -20,4 +19,10 @@ func main() {
 
 	// Start server
 	r.Run(":8080")
+
+	r.LoadHTMLGlob("templates/*")
+
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 }
