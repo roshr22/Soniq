@@ -3,6 +3,9 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"soniq/internal/server"
+	"soniq/internal/server/handlers"
+	"html/template"
+	"net/http"
 )
 
 func main() {
@@ -16,6 +19,12 @@ func main() {
 
 	// Audio upload endpoint
 	r.POST("/upload", handlers.UploadAudio)
+
+	r.LoadHTMLGlob("templates/*")
+
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 
 	// Start server
 	r.Run(":8080")

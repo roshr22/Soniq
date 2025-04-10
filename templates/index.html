@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Soniq</title>
+</head>
+<body>
+  <h2>🎧 Soniq - Voice Chat</h2>
+
+  <button onclick="startRecording()">Start Recording</button>
+  <button onclick="stopRecording()">Stop & Send</button>
+
+  <ul id="chat"></ul>
+
+  <script>
+    const ws = new WebSocket("ws://localhost:8080/ws");
+
+    ws.onmessage = (event) => {
+      const url = event.data;
+      const li = document.createElement("li");
+      const audio = document.createElement("audio");
+      audio.src = url;
+      audio.controls = true;
+      li.appendChild(audio);
+      document.getElementById("chat").appendChild(li);
+    };
+
+    let mediaRecorder;
+    let audioChunks = [];
+
+    async function startRecording() {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.start();
+
+      mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+      };
+    }
+
+    function stopRecording() {
+      mediaRecorder.stop();
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append("audio", blob, "voice.webm");
+
+        const response = await fetch("/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        ws.send(data.url); // Send audio URL to all clients
+        audioChunks = [];
+      };
+    }
+  </script>
+</body>
+</html>
