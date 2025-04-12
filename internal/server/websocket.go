@@ -3,19 +3,19 @@ package server
 import (
 	"fmt"
 	"net/http"
-
+	"soniq/internal/server/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true // allow any origin for now
+		return true
 	},
 }
 
-// simple in-memory list of connected clients
 var clients = make(map[*websocket.Conn]bool)
+var Messages = make(chan string)
 
 func HandleWebSocket(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -28,18 +28,23 @@ func HandleWebSocket(c *gin.Context) {
 	clients[conn] = true
 	fmt.Println("New client connected")
 
-	for {
-		// Wait for message from client
-		messageType, message, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println("Read error:", err)
-			delete(clients, conn)
-			break
+	// Read messages from this client and publish to Redis
+	go func() {
+		for {
+			_, message, err := conn.ReadMessage()
+			if err != nil {
+				fmt.Println("Read error:", err)
+				delete(clients, conn)
+				break
+			}
+			redis.PublishMessage(string(message))
 		}
+	}()
 
-		// Broadcast to all connected clients
+	// Send messages from Redis to this client
+	for msg := range Messages {
 		for client := range clients {
-			if err := client.WriteMessage(messageType, message); err != nil {
+			if err := client.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 				fmt.Println("Write error:", err)
 				client.Close()
 				delete(clients, client)
