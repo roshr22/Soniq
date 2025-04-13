@@ -1,1 +1,2 @@
 # Soniq
+Soniq is a real-time web application developed in Go that enables users to exchange short audio messages seamlessly. Designed with simplicity and performance in mind, it leverages raw socket communication and the Gin web framework to deliver a smooth voice-based messaging experience. Soniq serves as a lightweight alternative to conventional chat platforms, making it a suitable project for exploring media streaming, concurrent networking, and audio handling in modern web applications.
